@@ -26,6 +26,10 @@ pub fn gcd(a:u64, b:u64) -> u64 {
     let mut h1 = 0 as u64;
     let mut h2 = 1 as u64;
     while u != 0 {
+        if v == 0 {
+            println!("Error in f1 gcd: f = {}", string(b));
+            process::exit(1);
+        }
         let mut j:i64 = deg(u) as i64 - deg(v) as i64;
         if j < 0 {
             swap(&mut u, &mut v);
@@ -252,7 +256,7 @@ pub fn shift_left_i(a:&mut u64, i:u64) -> u64 {
 
 // Returns true if f is irreducible over GF(2), false otherwise
 // max degree of f is m = 63
-pub fn is_irreducible(f:u64) -> bool {
+/*pub fn is_irreducible(f:u64) -> bool {
     let mut m = deg(f);
     let mut px = 2 as u64;
     for i in 0..m {
@@ -263,11 +267,86 @@ pub fn is_irreducible(f:u64) -> bool {
     } else {
         return false;
     }
+}*/
+
+/*fn multiply_by_x_mod_fx(b: u64, f:u64) -> u64 {
+    let mut b = b.clone();
+    let m = deg(f);
+    let mut rz = rz(f);
+    shift_left(&mut b);
+    if deg(b) == m {
+        b = add(b, rz);
+        b = add(b, 2_u64.pow(m as u32)); // cancel out highest order coeff
+    }
+    b
+}*/
+
+/*pub fn is_irreducible(f:u64) -> bool {
+    let mut m = deg(f);
+    let mut q = 2; // F_2
+    let mut exp = q;
+    let mut rhs = 1 as u64;
+    for i in 1..(m as f64/2 as f64).floor() as u64 + 1 { // for 1 to m/2
+        for number in 0..exp {
+            rhs = multiply_by_x_mod_fx(rhs, f);
+        } // rhs now = x^(q*i)
+        let rhs_plus_x = add(rhs, 2);
+        let mut gcd = gcd(f, rhs_plus_x);
+        if gcd != 1 {
+            return false;
+        }
+    }
+    return true; 
+}*/
+
+pub fn is_irreducible(f:u64) -> bool {
+    let mut m = deg(f);
+    //let mut q = 2; // F_2
+    let mut i = 0;
+    let mut exp = 1;
+    let mut rhs = 2 as u64; // rhs = x
+    rhs = multiply(rhs, rhs, f); // rhs = rhs^2 mod f
+    exp *= 2;
+    i += 1;
+    while i <= (m as f64/2 as f64).floor() as u64 {
+        //println!("i = {}", i);
+        let mut rhs_plus_x = add(rhs,2);
+        let mut gcd = gcd(f, rhs_plus_x);
+        if gcd != 1 {
+            return false;
+        }
+        rhs = multiply(rhs, rhs, f); // rhs = rhs^2 mod f
+        exp *= 2;
+        i += 1;
+    }
+    return true; 
 }
 
+pub fn get_random_polynomial(m:u64) -> u64 {
+    let mut f = 2_u64.pow(m as u32); // degree m 
+    for index in 0..m {
+        let mut coeff:u64 = rand::thread_rng().gen_range(0..2); // choose 0 or 1
+        if coeff == 1 {
+            f = add(f, 2_u64.pow(index as u32));
+        }
+    }
+    f
+}
+
+pub fn get_irreducible_polynomial(m:u64) -> u64 {
+    let mut f = get_random_polynomial(m);
+    // test random polynomial
+    let mut count = 0;
+    while !is_irreducible(f) { 
+        f = get_random_polynomial(m);
+        count += 1;
+    }
+    println!("{} tries to find irreducible f", count);
+    f
+}
 
 // Returns a primitive (irreducible) polynomial of degree m
-pub fn get_irreducible_polynomial(m:u64) -> u64 {
+/*pub fn get_irreducible_polynomial(m:u64) -> u64 {
     let mut f = 2_u64.pow(m as u32); // degree m 
     f = add(f, 1 as u64); // constant is 1
     let mut index = rand::thread_rng().gen_range(1..m); // choose 3rd index
@@ -284,7 +363,7 @@ pub fn get_irreducible_polynomial(m:u64) -> u64 {
         }
     }   
     return f
-}
+}*/
 
 // Returns length random elements of GF(2^m) in a shuffled vector
 // If one of them is a root, polynomial g was not irreducible

@@ -39,6 +39,8 @@ pub fn create_system(n:u64, t:u64) -> (public_key, private_key) {
     test::check_precondition(length, t, m);
     let mut f = f1::get_irreducible_polynomial(m);
     let mut g = f2::get_irreducible_polynomial(t, f);
+    println!("f = {}", f1::string(f));
+    println!("g = {}", f2::string(&g));
     let mut L = f1::create_L(&g, f, length as usize);
     let (mut G, mut dimension, mut length) = matrix::generator(&g, f, &L);
     let mut S = matrix::dense_nonsingular_matrix(dimension as u64);
