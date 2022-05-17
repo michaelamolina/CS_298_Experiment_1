@@ -68,7 +68,7 @@ pub fn create_system(n:u64, t:u64) -> (public_key, private_key) {
 pub fn initialization_vector(public_key:&public_key) -> Matrix {
     let mut dimension = public_key.dimension;
     let mut iv = zeros(1 as usize, dimension as usize);
-    let mut init_number = rand::thread_rng().gen_range(0..2_u64.pow(dimension as u32));
+    /*let mut init_number = rand::thread_rng().gen_range(0..2_u64.pow(dimension as u32));
     for i in (0..dimension as usize).rev() { // fill matrix from right to left
         if init_number%2 == 0 {
             iv[(0,i)] = 0 as f64;
@@ -76,6 +76,10 @@ pub fn initialization_vector(public_key:&public_key) -> Matrix {
             iv[(0,i)] = 1 as f64;
         }
         init_number = init_number >> 1;
+    }*/
+    for i in 0..dimension {
+        let mut value:u64 = rand::thread_rng().gen_range(0..2);
+        iv[(0,i as usize)] = value as f64;
     }
     iv
 }
@@ -90,7 +94,10 @@ pub fn encrypt(message:String, public_key:&public_key, iv:&Matrix) -> Vec<u64> {
     let mut prev_ciphertext = iv.clone(); 
     let mut      ciphertext = Vec::new(); // vector of 1 x length matrices
     let              blocks = vec_into_matrix_blocks(&plaintext, dimension); // split plaintext into 1 x dimension matrices
+    let mut count = 1;
+    let mut blocks_len = blocks.len();
     for block in blocks { // iterate through matrices
+        println!("encrypting block {}/{}", count, blocks_len);
         let x = xor_matrix(&block, &prev_ciphertext, dimension); // xor with previous ciphertext
         let mut curr_ciphertext = encrypt_decrypt::encrypt(&x, 
                                                             &public_key.generator,  
@@ -98,6 +105,7 @@ pub fn encrypt(message:String, public_key:&public_key, iv:&Matrix) -> Vec<u64> {
                                                             public_key.t);
         prev_ciphertext = curr_ciphertext.clone();
         ciphertext.push(curr_ciphertext.clone()); // ciphertext is a vector of encrypted matrices
+        count += 1;
     }
     let mut ciphertext = matrix_blocks_into_vec(&ciphertext, length);
     ciphertext
@@ -107,7 +115,10 @@ pub fn decrypt(ciphertext:&Vec<u64>, private_key:&private_key, iv:&Matrix) -> St
     let mut ciphertext = vec_into_matrix_blocks(&ciphertext, private_key.length); 
     let mut plaintext = Vec::new();
     let mut prev_ciphertext = iv.clone();
+    let mut count = 1;
+    let mut ciphertext_len = ciphertext.len();
     for block in ciphertext {
+        println!("decrypting block {}/{}", count, ciphertext_len);
         let mut plaintext_block = encrypt_decrypt::decrypt(&block, 
                                                              &private_key.S, 
                                                              &private_key.G, 
@@ -120,6 +131,7 @@ pub fn decrypt(ciphertext:&Vec<u64>, private_key:&private_key, iv:&Matrix) -> St
         let mut plaintext_block = xor_matrix(&plaintext_block, &prev_ciphertext, private_key.dimension);
         plaintext.push(plaintext_block);
         prev_ciphertext = block.clone();
+        count += 1; 
     }
     let mut plaintext = matrix_blocks_into_vec(&plaintext, private_key.dimension);
     while plaintext.len() % 8 as usize != 0 {

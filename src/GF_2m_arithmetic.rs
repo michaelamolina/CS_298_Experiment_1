@@ -19,6 +19,9 @@ use itertools::Itertools;
 
 // Returns gcd of two polynomials a and b 
 pub fn gcd(a:u64, b:u64) -> u64 {
+    if a == 0 || b == 0 {
+        return 0;
+    }
     let mut u = a.clone();
     let mut v = b.clone();
     let mut g1 = 1 as u64;

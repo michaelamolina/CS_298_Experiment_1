@@ -76,7 +76,7 @@ pub fn append(a:&Matrix, b:&Matrix, h1:u64, w1:u64, h2:u64, w2:u64) -> Matrix {
 // Make sure determinant is 1 or -1 so inverse contains whole numbers
 // Also, if matrix is too large with high density, library cannot find the matrix
 // Also Rust library sometimes crashes while finding determinant
-pub fn dense_nonsingular_matrix(k:u64) -> Matrix {
+/*pub fn dense_nonsingular_matrix(k:u64) -> Matrix {
     let mut rng = ChaCha20Rng::from_entropy();
     //let mut rng = ChaCha8Rng::seed_from_u64(1);
     let size:u64 = k*k;
@@ -118,6 +118,59 @@ pub fn dense_nonsingular_matrix(k:u64) -> Matrix {
         iteration += 1;
     }
     //println!("end dense nonsingular");
+    m
+}*/
+
+pub fn dense_nonsingular_matrix(k:u64) -> Matrix {
+    let mut m = zeros(k as usize, k as usize);
+    for i in 0..k {
+        for j in 0..k {
+            if i == j {
+                m[(i as usize, j as usize)] = 1 as f64;
+            }
+        }
+    }
+    //m.print();
+    let mut density = k;
+    let mut min_density = ((k as f64*k as f64)/2 as f64).floor() as u64;
+    let mut no_density_increase = 0;
+    while density < min_density {
+        for row in 0..k {
+            let mut first_density = density;
+            let mut random_row = rand::thread_rng().gen_range(0..k);
+            if row != random_row {
+                let mut possible = true;
+                for i in 0..k {
+                    if m[(row as usize, i as usize)] == 1.0 && m[(random_row as usize, i as usize)] == 1.0 {
+                        possible = false;
+                        break;
+                    }
+                }
+                if possible {
+                    for i in 0..k {
+                        let mut before = m[(row as usize, i as usize)];
+                        m[(row as usize, i as usize)] = m[(row as usize, i as usize)] + m[(random_row as usize, i as usize)]; 
+                        let mut after = m[(row as usize, i as usize)];
+                        if after > before {
+                            density += 1;
+                        }
+                    }
+                }
+            }
+            let mut last_density = density;
+            if first_density == last_density {
+                no_density_increase += 1;
+            } else {
+                no_density_increase = 0;
+            }
+        }
+        if no_density_increase > k*3 {
+            //println!("breaking: no_density_increase = {}", no_density_increase);
+            break;
+        }
+    }
+    //m.print();
+    println!("density = {}/{}", density, k*k);
     m
 }
 
