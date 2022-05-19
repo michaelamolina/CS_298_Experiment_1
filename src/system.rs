@@ -39,8 +39,8 @@ pub fn create_system(n:u64, t:u64) -> (public_key, private_key) {
     test::check_precondition(length, t, m);
     let mut f = f1::get_irreducible_polynomial(m);
     let mut g = f2::get_irreducible_polynomial(t, f);
-    println!("f = {}", f1::string(f));
-    println!("g = {}", f2::string(&g));
+    //println!("f = {}", f1::string(f));
+    //println!("g = {}", f2::string(&g));
     let mut L = f1::create_L(&g, f, length as usize);
     let (mut G, mut dimension, mut length) = matrix::generator(&g, f, &L);
     let mut S = matrix::dense_nonsingular_matrix(dimension as u64);
@@ -99,12 +99,16 @@ pub fn encrypt(message:String, public_key:&public_key, iv:&Matrix) -> Vec<u64> {
     for block in blocks { // iterate through matrices
         println!("encrypting block {}/{}", count, blocks_len);
         let x = xor_matrix(&block, &prev_ciphertext, dimension); // xor with previous ciphertext
+        println!("line 2");
         let mut curr_ciphertext = encrypt_decrypt::encrypt(&x, 
                                                             &public_key.generator,  
                                                             public_key.length as usize, 
                                                             public_key.t);
+        println!("line 3");
         prev_ciphertext = curr_ciphertext.clone();
+        println!("line 4");
         ciphertext.push(curr_ciphertext.clone()); // ciphertext is a vector of encrypted matrices
+        println!("line 5");
         count += 1;
     }
     let mut ciphertext = matrix_blocks_into_vec(&ciphertext, length);

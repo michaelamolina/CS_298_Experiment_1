@@ -344,7 +344,7 @@ pub fn get_irreducible_polynomial(m:u64) -> u64 {
         f = get_random_polynomial(m);
         count += 1;
     }
-    println!("{} tries to find irreducible f", count);
+    //println!("{} tries to find irreducible f", count);
     f
 }
 

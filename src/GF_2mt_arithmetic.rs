@@ -371,6 +371,11 @@ pub fn get_random_polynomial(t:u64, f:u64) -> Vec<u64> {
         let mut constant = rand::thread_rng().gen_range(1..2_u64.pow(m as u32));
         g[index as usize] = constant;
     }
+    /*let mut constant = rand::thread_rng().gen_range(1..2_u64.pow(m as u32));
+    g[0] = constant;
+    let mut index = rand::thread_rng().gen_range(1..t);
+    let mut constant = rand::thread_rng().gen_range(1..2_u64.pow(m as u32));
+    g[index as usize] = 1;//constant;*/
     g
 }
 
@@ -378,10 +383,13 @@ pub fn get_irreducible_polynomial(t:u64, f:u64) -> Vec<u64> {
     let mut g = get_random_polynomial(t, f);
     let mut count = 0;
     while !is_irreducible(&g, f) {
+        if count %1000 == 0 {
+            //println!("not irreducible count: {}", count);
+        }
         g = get_random_polynomial(t, f);
         count += 1;
     }
-    println!("{} tries to find irreducible g", count);
+    //println!("{} tries to find irreducible g", count);
     g
 }
 

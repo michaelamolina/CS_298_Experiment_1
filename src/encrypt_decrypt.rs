@@ -20,15 +20,19 @@ use itertools::Itertools;
 pub fn encrypt(message:&Matrix, generator:&Matrix, length:usize, t:u64) -> Matrix {
     //println!("message = ");
     //message.print();
+    println!("encrypt line 1");
     let mut mG = matrix::mod2_matrix(&(message.clone() * generator.clone()), 1 as usize, length as usize);
     //println!("mG = ");
     //mG.print();
+    println!("encrypt line 2");
     let mut error_vector = choose_error_vector(length as u64, t); 
     //println!("error_vector = ");
     //error_vector.print();
+    println!("encrypt line 3");
     let mut y = matrix::mod2_matrix(&(mG.clone() + error_vector.clone()), 1 as usize, length as usize);
     //println!("y = ");
     //y.print();
+    println!("encrypt line 4");
     y
 }
 
@@ -41,21 +45,27 @@ pub fn encrypt2(message:&Matrix, generator:&Matrix, length:usize, t:u64, error_v
 // Returns decrypted message
 // y is the received, encrypted message
 pub fn decrypt(y:&Matrix, S:&Matrix, G:&Matrix, P:&Matrix, g:&Vec<u64>, f:u64, L:&Vec<u64>, length:u64, dimension:u64) -> Matrix {
+    println!("decrypt line 1");
     let mut yP_inv = y.clone()*P.inv();
     //println!("yP_inv = ");
     //yP_inv.print();
+    println!("decrypt line 2");
     let mut error_vector = error_vector(&yP_inv, &g, f, &L);
     //println!("error_vector = ");
     //error_vector.print();
+    println!("decrypt line 3");
     let mut mSG = matrix::mod2_matrix(&(yP_inv + error_vector), 1 as usize, length as usize);
     //println!("mSG = ");
     //mSG.print();
+    println!("decrypt line 4");
     let mut find_mS = matrix::append(&G.transpose(), &mSG.transpose(), length, dimension, length, 1 as u64);
     //println!("find_mS = ");
     //find_mS.print();
+    println!("decrypt line 5");
     matrix::rref_for_decrypt(&mut find_mS, length, dimension+1, length, dimension);
     //println!("reduced find_mS = ");
     //find_mS.print();
+    println!("decrypt line 6");
     let mut mS = zeros(1 as usize, dimension as usize);
     let mut col = dimension as usize;
     for row in 0..dimension {
@@ -63,7 +73,9 @@ pub fn decrypt(y:&Matrix, S:&Matrix, G:&Matrix, P:&Matrix, g:&Vec<u64>, f:u64, L
     }
     //println!("mS = ");
     //mS.print();
+    println!("decrypt line 7");
     let mut S_inv = matrix::mod2_matrix(&(S.inv()), dimension as usize, dimension as usize);
+    println!("decrypt line 8");
     let mut decoded = matrix::mod2_matrix(&(mS.clone() * S_inv), 1 as usize, dimension as usize);
     //println!("decrypted = ");
     //decoded.print();
@@ -134,8 +146,14 @@ pub fn all_possible_error_vectors(width:u64, group_size:u64) -> Vec<Matrix> {
 }
 
 pub fn choose_error_vector(length:u64, t:u64) -> Matrix {
-    let mut error_vectors = all_possible_error_vectors(length, t); // takes too long to do all of them
-    let mut index = rand::thread_rng().gen_range(0..error_vectors.len());
-    return error_vectors[index as usize].clone();
+    //let mut error_vectors = all_possible_error_vectors(length, t); // takes too long to do all of them
+    //let mut index = rand::thread_rng().gen_range(0..error_vectors.len()); 
+    //return error_vectors[index as usize].clone();
+    let mut error_vector = zeros(1,length as usize);
+    for i in 0..t {
+        let mut index = rand::thread_rng().gen_range(0..length);
+        error_vector[(0 as usize, index as usize)] = 1 as f64; 
+    }
+    error_vector
 }
 

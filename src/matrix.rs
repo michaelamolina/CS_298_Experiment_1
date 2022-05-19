@@ -170,7 +170,7 @@ pub fn dense_nonsingular_matrix(k:u64) -> Matrix {
         }
     }
     //m.print();
-    println!("density = {}/{}", density, k*k);
+    //println!("density = {}/{}", density, k*k);
     m
 }
 
